@@ -1,0 +1,108 @@
+{
+  "backtest": [
+    {
+      "Test window": "2025-10 to 2025-12",
+      "Requests": 2199,
+      "Trained on": 4320,
+      "Old bot": "77.5%",
+      "Model, every request": "85.1%",
+      "Routed automatically": "82.7%",
+      "Accuracy when routed automatically": "98.3%"
+    },
+    {
+      "Test window": "2026-01 to 2026-03",
+      "Requests": 2168,
+      "Trained on": 6519,
+      "Old bot": "77.5%",
+      "Model, every request": "86.3%",
+      "Routed automatically": "84.3%",
+      "Accuracy when routed automatically": "98.0%"
+    },
+    {
+      "Test window": "2026-04 to 2026-06",
+      "Requests": 2135,
+      "Trained on": 8687,
+      "Old bot": "76.7%",
+      "Model, every request": "85.9%",
+      "Routed automatically": "84.0%",
+      "Accuracy when routed automatically": "97.4%"
+    }
+  ],
+  "holdout": {
+    "window": "2026-04 to 2026-06",
+    "n": 2135,
+    "bot_accuracy": 0.7667447306791569,
+    "model_accuracy": 0.8590163934426229,
+    "auto_share": 0.8402810304449648,
+    "auto_accuracy": 0.9743589743589743,
+    "clarify_share": 0.15971896955503512
+  },
+  "copy_the_bot": {
+    "matches_bot_labels": 0.9395784543325527,
+    "matches_real_outcome": 0.8107728337236534,
+    "our_model_matches_bot_labels": 0.8159250585480093
+  },
+  "money": {
+    "requests_per_year": 8540,
+    "bot_misroutes_per_year": 1992,
+    "avg_transfers_per_bot_misroute": 1.42,
+    "cost_per_misroute_rs": 692,
+    "bot_misrouting_cost_per_year_rs": 1459760,
+    "model_misrouting_cost_per_year_rs": 833637,
+    "model_with_question_cost_per_year_rs": 127400,
+    "questions_per_year": 1364,
+    "questions_cost_if_each_is_an_extra_contact_rs": 354640,
+    "licence_rs": 320000
+  },
+  "workload": [
+    {
+      "Team": "Repairs",
+      "Requests per month (where they really belong)": 165,
+      "Share": "23.0%",
+      "What the bot sent them per month": 206,
+      "Median hours to resolve": 9.0
+    },
+    {
+      "Team": "Returns & Replacement",
+      "Requests per month (where they really belong)": 106,
+      "Share": "14.8%",
+      "What the bot sent them per month": 81,
+      "Median hours to resolve": 9.6
+    },
+    {
+      "Team": "Installs & Demo",
+      "Requests per month (where they really belong)": 104,
+      "Share": "14.6%",
+      "What the bot sent them per month": 78,
+      "Median hours to resolve": 10.5
+    },
+    {
+      "Team": "Product Advice",
+      "Requests per month (where they really belong)": 90,
+      "Share": "12.6%",
+      "What the bot sent them per month": 77,
+      "Median hours to resolve": 9.6
+    },
+    {
+      "Team": "Billing",
+      "Requests per month (where they really belong)": 90,
+      "Share": "12.5%",
+      "What the bot sent them per month": 113,
+      "Median hours to resolve": 9.2
+    },
+    {
+      "Team": "Warranty Claims",
+      "Requests per month (where they really belong)": 89,
+      "Share": "12.4%",
+      "What the bot sent them per month": 67,
+      "Median hours to resolve": 9.8
+    },
+    {
+      "Team": "Filters & Consumables",
+      "Requests per month (where they really belong)": 73,
+      "Share": "10.1%",
+      "What the bot sent them per month": 95,
+      "Median hours to resolve": 8.9
+    }
+  ]
+}

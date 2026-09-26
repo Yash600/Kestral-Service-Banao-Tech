@@ -1,0 +1,9 @@
+# Kestrel client data - never commit (ops policy §10)
+data/*.csv
+evaluation/holdout_errors.csv
+evaluation/test_predictions_detail.csv
+__pycache__/
+*.pyc
+.venv/
+.claude/
+evaluation/jev_cache.jsonl

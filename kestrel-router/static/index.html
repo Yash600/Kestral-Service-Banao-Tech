@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kestrel Dispatch Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f2ede3;
+  --sheet: #fbf8f2;
+  --ink: #1d1b17;
+  --ink-2: #5a554b;
+  --ink-3: #8c8579;
+  --rule: #d9d1c2;
+  --rule-strong: #b9ae9b;
+  --focus: #1d1b17;
+  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --t-repairs: #b8391f;
+  --t-installs: #17706a;
+  --t-filters: #5f6d12;
+  --t-billing: #a86a0c;
+  --t-returns: #7a3565;
+  --t-warranty: #2a4a97;
+  --t-advice: #4c5863;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #151412; --sheet: #1d1c19; --ink: #ece6d8; --ink-2: #b3ab9b; --ink-3: #7f786c;
+    --rule: #34312b; --rule-strong: #4a463e; --focus: #ece6d8;
+    --t-repairs: #ec7a5f; --t-installs: #52b8ae; --t-filters: #a9bb4a; --t-billing: #e0a441;
+    --t-returns: #d57fbc; --t-warranty: #85a3ec; --t-advice: #9fadb9;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #151412; --sheet: #1d1c19; --ink: #ece6d8; --ink-2: #b3ab9b; --ink-3: #7f786c;
+  --rule: #34312b; --rule-strong: #4a463e; --focus: #ece6d8;
+  --t-repairs: #ec7a5f; --t-installs: #52b8ae; --t-filters: #a9bb4a; --t-billing: #e0a441;
+  --t-returns: #d57fbc; --t-warranty: #85a3ec; --t-advice: #9fadb9;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 15px/1.5 var(--sans);
+}
+button, select, textarea, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- masthead ---------- */
+.mast {
+  max-width: 1180px; margin: 0 auto; padding: 22px 24px 14px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.mast h1 { margin: 0; font: 400 34px/1 var(--serif); letter-spacing: -0.01em; }
+.mast h1 i { color: var(--ink-2); }
+.mast .meta { font: 12px/1.4 var(--mono); color: var(--ink-2); text-align: right; }
+.mast .meta b { color: var(--ink); font-weight: 500; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--t-installs); margin-right: 6px; vertical-align: 1px; }
+.dot.off { background: var(--t-repairs); }
+
+/* ---------- engine tabs: index tabs sitting on the page rule ---------- */
+.tabs {
+  max-width: 1180px; margin: 0 auto; padding: 0 24px; display: flex; gap: 4px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.tab {
+  display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: baseline; text-align: left;
+  background: none; border: 1px solid transparent; border-bottom: 0; border-radius: 4px 4px 0 0;
+  padding: 10px 18px 10px 14px; margin-bottom: -1px; cursor: pointer; min-width: 0;
+  flex: 1 1 0; max-width: 330px;
+}
+.tab .n { grid-row: span 2; font: 500 11px/1 var(--mono); color: var(--ink-3); padding-top: 6px; }
+.tab .t { font: 400 24px/1.1 var(--serif); color: var(--ink-2); }
+.tab .s { font: 11px/1.4 var(--mono); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab:hover .t { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--sheet); border-color: var(--rule-strong); box-shadow: inset 0 3px 0 var(--ink); }
+.tab[aria-selected="true"] .t { color: var(--ink); }
+.tab .s .off { color: var(--t-repairs); }
+.tab .s .on { color: var(--t-installs); }
+.intro { max-width: 1180px; margin: 0 auto; padding: 14px 24px 0; font-size: 14px; color: var(--ink-2); }
+.intro b { color: var(--ink); font-weight: 600; }
+.off-card { padding: 34px 28px; }
+.off-card h3 { margin: 0 0 8px; font: 400 28px/1.15 var(--serif); }
+.off-card p { margin: 0 0 12px; color: var(--ink-2); max-width: 52ch; }
+.off-card pre { font: 13px/1.6 var(--mono); background: var(--paper); border: 1px solid var(--rule); padding: 10px 12px; overflow-x: auto; margin: 0 0 12px; }
+
+main {
+  max-width: 1180px; margin: 0 auto; padding: 24px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 28px; align-items: start;
+}
+
+/* ---------- shared "sheet" ---------- */
+.sheet {
+  background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 3px;
+  box-shadow: 0 1px 0 var(--rule), 0 12px 28px -18px rgba(40, 30, 10, .35);
+}
+.sheet-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 14px 20px 12px; border-bottom: 1px dashed var(--rule-strong);
+}
+.sheet-head h2 { margin: 0; font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.sheet-head .no { font: 500 13px/1 var(--mono); }
+.sheet-body { padding: 18px 20px 20px; }
+
+/* ---------- intake form ---------- */
+.field { margin-bottom: 18px; }
+.label { display: block; font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 8px; }
+textarea {
+  width: 100%; min-height: 150px; resize: vertical; padding: 4px 2px 0; border: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule) 27px 28px);
+  line-height: 28px; font-size: 16px; outline-offset: 6px;
+}
+textarea::placeholder { color: var(--ink-3); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+select {
+  width: 100%; padding: 9px 10px; background: var(--paper); border: 1px solid var(--rule-strong); border-radius: 2px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.seg { display: flex; flex-wrap: wrap; border: 1px solid var(--rule-strong); border-radius: 2px; overflow: hidden; }
+.seg label { flex: 1 1 auto; position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span {
+  display: block; padding: 8px 10px; text-align: center; font: 500 12px/1.3 var(--mono);
+  border-right: 1px solid var(--rule-strong); color: var(--ink-2); cursor: pointer; white-space: nowrap;
+}
+.seg label:last-child span { border-right: 0; }
+.seg input:checked + span { background: var(--ink); color: var(--sheet); }
+.seg input:disabled + span { opacity: .45; cursor: not-allowed; text-decoration: line-through; }
+.seg input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -4px; }
+
+.actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.btn {
+  border: 1px solid var(--ink); background: var(--ink); color: var(--sheet);
+  padding: 11px 20px; border-radius: 2px; cursor: pointer; font: 600 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn[disabled] { opacity: .5; cursor: progress; }
+.hint { font: 12px/1.4 var(--mono); color: var(--ink-3); }
+
+.examples { margin-top: 22px; padding-top: 16px; border-top: 1px dashed var(--rule-strong); }
+.examples ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.examples button {
+  width: 100%; text-align: left; background: none; border: 0; padding: 7px 0; cursor: pointer;
+  display: grid; grid-template-columns: 88px 1fr; gap: 12px; align-items: baseline; border-bottom: 1px dotted var(--rule);
+}
+.examples button:hover .ex-text { text-decoration: underline; text-underline-offset: 3px; }
+.ex-kind { font: 500 11px/1.3 var(--mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
+.ex-text { color: var(--ink); }
+
+/* ---------- routing slip ---------- */
+.slip { min-height: 420px; position: relative; }
+.empty { padding: 60px 28px; text-align: center; color: var(--ink-3); }
+.empty p { margin: 0 auto; max-width: 34ch; font: italic 22px/1.35 var(--serif); color: var(--ink-2); }
+.empty .hint { margin-top: 14px; display: block; }
+
+.verdict { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; margin-bottom: 20px; }
+.verdict .k { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 8px; }
+.stamp {
+  --c: var(--ink);
+  display: inline-block; color: var(--c); border: 3px solid var(--c); border-radius: 5px;
+  padding: 8px 14px 6px; font: 400 38px/1 var(--serif); letter-spacing: .01em;
+  transform: rotate(-2.5deg); transform-origin: left center;
+  box-shadow: inset 0 0 0 2px var(--sheet), inset 0 0 0 3px var(--c);
+  animation: thump .38s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes thump { from { transform: rotate(-6deg) scale(1.35); opacity: 0; } to { transform: rotate(-2.5deg) scale(1); opacity: 1; } }
+.conf { text-align: right; }
+.conf .num { font: 500 30px/1 var(--mono); }
+.conf .of { font: 12px/1.3 var(--mono); color: var(--ink-2); }
+.ticks { display: flex; gap: 3px; margin-top: 8px; justify-content: flex-end; }
+.ticks i { width: 7px; height: 16px; background: var(--rule); display: block; }
+.ticks i.on { background: var(--c, var(--ink)); }
+
+.notes { margin: 0 0 20px; padding: 0; list-style: none; counter-reset: n; border-top: 1px solid var(--rule); }
+.notes li { counter-increment: n; display: grid; grid-template-columns: 26px 1fr; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.notes li::before { content: counter(n, decimal-leading-zero); font: 500 12px/1.6 var(--mono); color: var(--ink-3); }
+
+.ranked { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ranked li { display: grid; grid-template-columns: 170px 1fr 44px; gap: 10px; align-items: center; font-size: 13px; }
+.ranked .bar { height: 6px; background: var(--rule); position: relative; }
+.ranked .bar b { position: absolute; inset: 0 auto 0 0; background: var(--c); }
+.ranked .p { font: 12px/1 var(--mono); text-align: right; color: var(--ink-2); }
+.sub { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); margin: 22px 0 10px; }
+
+/* the one question */
+.ask { border: 1.5px solid var(--ink); border-radius: 3px; padding: 16px 16px 12px; margin-bottom: 20px; position: relative; }
+.ask::before {
+  content: "ONE QUESTION FIRST"; position: absolute; top: -9px; left: 12px; padding: 0 6px; background: var(--sheet);
+  font: 600 11px/1.4 var(--mono); letter-spacing: .12em;
+}
+.ask h3 { margin: 4px 0 4px; font: 400 26px/1.15 var(--serif); }
+.ask p { margin: 0 0 12px; color: var(--ink-2); font-size: 14px; }
+.opts { display: grid; gap: 8px; }
+.opt {
+  --c: var(--ink); display: grid; grid-template-columns: 10px 1fr auto; gap: 12px; align-items: center; text-align: left;
+  padding: 11px 12px; background: var(--paper); border: 1px solid var(--rule-strong); border-radius: 2px; cursor: pointer;
+}
+.opt::before { content: ""; width: 10px; height: 10px; background: var(--c); border-radius: 1px; }
+.opt:hover { border-color: var(--ink); }
+.opt.likely { background: var(--sheet); border-color: var(--ink-3); }
+.opt:not(.likely) { padding-top: 8px; padding-bottom: 8px; }
+.opt:not(.likely) span:first-of-type { color: var(--ink-2); }
+.opt .t { font: 12px/1 var(--mono); color: var(--ink-2); }
+
+details.raw { margin-top: 20px; border-top: 1px dashed var(--rule-strong); padding-top: 12px; }
+details.raw summary { cursor: pointer; font: 500 12px/1 var(--mono); color: var(--ink-2); }
+details.raw pre { font: 12px/1.5 var(--mono); background: var(--paper); padding: 12px; overflow: auto; max-height: 280px; border: 1px solid var(--rule); }
+
+.second { margin-top: 18px; padding: 12px 14px; border: 1px dashed var(--rule-strong); display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
+.second .k { font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.second .agree { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 3px 6px; border: 1px solid currentColor; }
+.err { border-left: 3px solid var(--t-repairs); padding: 10px 14px; background: var(--paper); }
+
+/* ---------- ledger ---------- */
+.ledger { grid-column: 1 / -1; }
+.ledger table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ledger th { text-align: left; font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 8px 10px; border-bottom: 1px solid var(--rule-strong); }
+.ledger td { padding: 9px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.ledger td.m { font-family: var(--mono); white-space: nowrap; }
+.tag { --c: var(--ink); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.tag::before { content: ""; width: 8px; height: 8px; background: var(--c); border-radius: 1px; }
+.ledger .none { color: var(--ink-3); font-style: italic; padding: 14px 10px; }
+
+/* ---------- batch tab ---------- */
+.batch { max-width: 1180px; margin: 0 auto; padding: 24px; display: grid; gap: 22px; }
+.drop {
+  display: grid; gap: 8px; place-items: center; text-align: center; cursor: pointer;
+  padding: 38px 20px; border: 1.5px dashed var(--rule-strong); border-radius: 3px; background: var(--paper);
+}
+.drop:hover, .drop.over { border-color: var(--ink); }
+.drop-t { font: 400 26px/1.2 var(--serif); }
+.drop .hint { max-width: 62ch; }
+.drop:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+#b-msg:not(:empty) { margin-top: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tile { background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 3px; padding: 14px 16px; }
+.tile .k { font: 500 11px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.tile .v { font: 500 30px/1.1 var(--mono); margin-top: 8px; }
+.tile .d { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.acc { padding: 14px 18px; border-left: 3px solid var(--ink); background: var(--sheet); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.acc .row3 { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 6px; }
+.acc .row3 div { font: 13px/1.4 var(--mono); color: var(--ink-2); }
+.acc .row3 b { display: block; font: 500 22px/1.2 var(--mono); color: var(--ink); }
+.acc .warn { margin-top: 10px; font-size: 13px; color: var(--t-repairs); }
+.b-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.bars { display: grid; gap: 9px; }
+.bar-row { display: grid; grid-template-columns: 168px 1fr 92px; gap: 10px; align-items: center; font-size: 13px; }
+.bar-row .track { height: 12px; background: var(--rule); position: relative; }
+.bar-row .fill { position: absolute; inset: 0 auto 0 0; background: var(--c); }
+.bar-row .hatch { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, var(--sheet) 0 2px, transparent 2px 5px); }
+.bar-row .n { font: 12px/1 var(--mono); text-align: right; color: var(--ink-2); }
+.legend { margin-top: 12px; font: 11px/1.4 var(--mono); color: var(--ink-3); }
+.legend i { display: inline-block; width: 16px; height: 9px; vertical-align: -1px; margin-right: 4px; background: repeating-linear-gradient(135deg, var(--sheet) 0 2px, var(--ink-3) 2px 5px); }
+.mini { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mini th { text-align: left; font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); padding: 6px 8px; border-bottom: 1px solid var(--rule-strong); }
+.mini td { padding: 7px 8px; border-bottom: 1px solid var(--rule); }
+.mini td.m { font-family: var(--mono); }
+.b-tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.b-tools .seg { flex: 0 1 auto; }
+.b-tools select { width: auto; min-width: 170px; }
+.b-tools input[type=search] { flex: 1 1 200px; padding: 9px 10px; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--paper); }
+.b-tools .btn { margin-left: auto; }
+.b-table-wrap { overflow-x: auto; }
+.b-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.b-table th { text-align: left; font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 8px; border-bottom: 1px solid var(--rule-strong); position: sticky; top: 0; background: var(--sheet); }
+.b-table td { padding: 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.b-table td.m { font-family: var(--mono); white-space: nowrap; }
+.b-table td.why { color: var(--ink-2); font-size: 12px; max-width: 34ch; }
+.b-table .q { font: 600 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--t-billing); display: block; margin-top: 4px; }
+.b-table .ok { color: var(--t-installs); font-family: var(--mono); }
+.b-table .no { color: var(--t-repairs); font-family: var(--mono); }
+.more-btn { margin-top: 12px; background: none; border: 1px solid var(--rule-strong); padding: 8px 14px; cursor: pointer; font: 500 12px/1 var(--mono); }
+.empty-row { color: var(--ink-3); font-style: italic; }
+
+footer { max-width: 1180px; margin: 0 auto; padding: 8px 24px 40px; font: 12px/1.6 var(--mono); color: var(--ink-3); display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; }
+footer a { color: var(--ink-2); }
+.theme-btn { background: none; border: 1px solid var(--rule-strong); border-radius: 2px; padding: 3px 8px; cursor: pointer; font: 11px/1.4 var(--mono); color: var(--ink-2); }
+
+@media (max-width: 900px) {
+  .tabs, .intro { padding-left: 16px; padding-right: 16px; }
+  .batch { padding: 16px; gap: 16px; }
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .b-grid { grid-template-columns: 1fr; }
+  main { grid-template-columns: 1fr; padding: 16px; gap: 20px; }
+  .mast { padding: 18px 16px 12px; }
+  .mast .meta { text-align: left; }
+  footer { padding: 8px 16px 32px; }
+}
+@media (max-width: 520px) {
+  .row { grid-template-columns: 1fr; }
+  .verdict { grid-template-columns: 1fr; }
+  .conf { text-align: left; } .ticks { justify-content: flex-start; }
+  .stamp { font-size: 30px; }
+  .ranked li { grid-template-columns: 120px 1fr 38px; }
+  .examples button { grid-template-columns: 1fr; gap: 2px; }
+  .ledger .hide-sm { display: none; }
+  .seg span { padding: 8px 6px; }
+  .tab { padding: 8px 10px; flex: 1 1 0; } .tab .t { font-size: 18px; } .tab .s { display: none; }
+  .bar-row { grid-template-columns: 110px 1fr 70px; }
+  .b-tools .btn { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .stamp { animation: none; } }
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <h1>Kestrel <i>Dispatch Desk</i></h1>
+  <div class="meta" id="status"><span class="dot"></span>Checking the router…</div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Routing engine">
+  <button class="tab" role="tab" id="tab-ml" aria-selected="true" aria-controls="main" data-engine="ml">
+    <span class="n">01</span><span class="t">Local model</span><span class="s" id="st-ml">trained on Kestrel's history · free</span>
+  </button>
+  <button class="tab" role="tab" id="tab-jev" aria-selected="false" aria-controls="main" data-engine="jev" tabindex="-1">
+    <span class="n">02</span><span class="t">Jev</span><span class="s" id="st-jev">checking…</span>
+  </button>
+  <button class="tab" role="tab" id="tab-batch" aria-selected="false" aria-controls="batch" data-engine="batch" tabindex="-1">
+    <span class="n">03</span><span class="t">Batch file</span><span class="s">upload a CSV export · route every row</span>
+  </button>
+</nav>
+<p class="intro" id="intro"></p>
+
+<main id="main" role="tabpanel" aria-labelledby="tab-ml">
+  <!-- intake -->
+  <section class="sheet" aria-labelledby="intake-h">
+    <div class="sheet-head"><h2 id="intake-h">Intake slip</h2><span class="no" id="slip-no">SR ——</span></div>
+    <form class="sheet-body" id="form" autocomplete="off">
+      <div class="field">
+        <label class="label" for="text">Customer's message or IVR transcript</label>
+        <textarea id="text" name="request_text" required minlength="2" maxlength="4000"
+          placeholder="e.g. water purifier leaking from the bottom, please send someone"></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="label" for="product">Product</label>
+          <select id="product" name="product_family"><option value="">Not known</option></select>
+        </div>
+        <div class="field">
+          <span class="label" id="ch-l">Channel</span>
+          <div class="seg" role="radiogroup" aria-labelledby="ch-l">
+            <label><input type="radio" name="channel" value="whatsapp" checked><span>WhatsApp</span></label>
+            <label><input type="radio" name="channel" value="chat"><span>Chat</span></label>
+            <label><input type="radio" name="channel" value="ivr"><span>IVR</span></label>
+            <label><input type="radio" name="channel" value="email"><span>Email</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="wr-l">Cover</span>
+        <div class="seg" role="radiogroup" aria-labelledby="wr-l">
+          <label><input type="radio" name="warranty_status" value="in_warranty" checked><span>In warranty</span></label>
+          <label><input type="radio" name="warranty_status" value="shield"><span>Kestrel Shield</span></label>
+          <label><input type="radio" name="warranty_status" value="out_of_warranty"><span>Out of warranty</span></label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="go" type="submit">Route it</button>
+        <span class="hint">or Ctrl + Enter</span>
+      </div>
+
+      <div class="examples">
+        <span class="label">Try one from the desk</span>
+        <ul id="examples"></ul>
+      </div>
+    </form>
+  </section>
+
+  <!-- output -->
+  <section class="sheet slip" aria-labelledby="slip-h">
+    <div class="sheet-head"><h2 id="slip-h">Routing slip · <span id="slip-engine">local model</span></h2><span class="no" id="slip-state">—</span></div>
+    <div class="sheet-body" id="out" aria-live="polite">
+      <div class="empty">
+        <p>Paste a request on the left. The slip says which team takes it, how sure the router is, and why.</p>
+        <span class="hint">If the message doesn't say what's wrong, it asks one question instead of guessing.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- today's ledger -->
+  <section class="sheet ledger" aria-labelledby="led-h">
+    <div class="sheet-head"><h2 id="led-h">This session's ledger · both engines</h2><span class="no" id="led-count">0 routed</span></div>
+    <div class="sheet-body" style="padding-top:6px">
+      <table>
+        <thead><tr><th>No.</th><th>Message</th><th>Team</th><th>Engine</th><th class="hide-sm">How</th></tr></thead>
+        <tbody id="ledger"><tr><td colspan="5" class="none">Nothing routed yet.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<section id="batch" class="batch" role="tabpanel" aria-labelledby="tab-batch" hidden>
+  <div class="sheet">
+    <div class="sheet-head"><h2>Batch intake</h2><span class="no" id="b-file">no file yet</span></div>
+    <div class="sheet-body">
+      <label class="drop" id="drop" for="b-input">
+        <input type="file" id="b-input" accept=".csv,text/csv" hidden>
+        <span class="drop-t">Drop a CSV export here, or <u>choose a file</u></span>
+        <span class="hint">Needs a <b>request_text</b> column. Uses request_id, channel, product_family and warranty_status when present.
+          If the file has the true team (final_team or team), you also get accuracy. Up to 50,000 rows.</span>
+      </label>
+      <div id="b-msg" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div id="b-results" hidden>
+    <div class="tiles" id="b-tiles"></div>
+    <div id="b-acc"></div>
+
+    <div class="b-grid">
+      <div class="sheet">
+        <div class="sheet-head"><h2>Where the requests go</h2><span class="no">team · count · needing a question</span></div>
+        <div class="sheet-body" id="b-teams"></div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-head"><h2>How sure the router is</h2><span class="no">confidence bands</span></div>
+        <div class="sheet-body" id="b-bands"></div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-head"><h2>By channel</h2><span class="no">where vague requests come from</span></div>
+        <div class="sheet-body" id="b-channel"></div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-head"><h2>By product</h2><span class="no"></span></div>
+        <div class="sheet-body" id="b-product"></div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><h2>Every request</h2><span class="no" id="b-count"></span></div>
+      <div class="sheet-body">
+        <div class="b-tools">
+          <div class="seg" role="radiogroup" aria-label="Status filter">
+            <label><input type="radio" name="b-status" value="all" checked><span>All</span></label>
+            <label><input type="radio" name="b-status" value="routed"><span>Routed</span></label>
+            <label><input type="radio" name="b-status" value="needs_question"><span>Needs a question</span></label>
+            <label id="b-wrong-l" hidden><input type="radio" name="b-status" value="wrong"><span>Wrong</span></label>
+          </div>
+          <select id="b-team" aria-label="Team filter"><option value="">All teams</option></select>
+          <input type="search" id="b-search" placeholder="Search messages or IDs" aria-label="Search">
+          <button class="btn" id="b-dl" type="button">Download CSV</button>
+        </div>
+        <div class="b-table-wrap">
+          <table class="b-table">
+            <thead><tr><th>ID</th><th>Message</th><th>Team</th><th>Conf.</th><th class="hide-sm">Why</th><th id="b-exp-h" hidden>Truth</th></tr></thead>
+            <tbody id="b-body"></tbody>
+          </table>
+        </div>
+        <button class="more-btn" id="b-more" type="button" hidden>Show 100 more</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span id="evidence">Backtest figures load from evaluation/metrics.json.</span>
+  <span><a href="/docs">API docs</a> · POST /route · <button class="theme-btn" id="theme" type="button">Theme: auto</button></span>
+</footer>
+
+<script>
+const TEAM_VAR = {
+  "Repairs": "--t-repairs", "Installs & Demo": "--t-installs", "Filters & Consumables": "--t-filters",
+  "Billing": "--t-billing", "Returns & Replacement": "--t-returns", "Warranty Claims": "--t-warranty",
+  "Product Advice": "--t-advice",
+};
+const EXAMPLES = [
+  { kind: "Clear", text: "display of air fryer gone blank pls call back", product: "Air Fryer", ch: "chat", w: "in_warranty" },
+  { kind: "Vague", text: "please call me about my purifier", product: "Water Purifier", ch: "ivr", w: "in_warranty" },
+  { kind: "Paid, not billing", text: "I paid for installation 3 days ago but the installer has not come", product: "Water Purifier", ch: "whatsapp", w: "in_warranty" },
+  { kind: "Two asks", text: "good morning, spare blade set for mixer available?, mixer showing error code E7", product: "Mixer Grinder", ch: "whatsapp", w: "shield" },
+  { kind: "Payment", text: "charged twice for my robot vacuum order KO2611962, need refund", product: "Robot Vacuum", ch: "email", w: "in_warranty" },
+];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const color = team => `var(${TEAM_VAR[team] || "--ink"})`;
+const pct = x => `${Math.round(x * 100)}%`;
+const form = $("#form"), out = $("#out"), go = $("#go");
+let serial = 510000 + Math.floor(Math.random() * 9000);
+let current = null;         // the record currently on the slip
+let jevOn = false, jevReason = "", holdout = null;
+let engine = "ml";                              // the active tab
+const tabs = { ml: { html: null, state: "—" }, jev: { html: null, state: "—" }, batch: {} };
+const ledger = [];
+
+// ---------- theme toggle (remembered per browser, optional) ----------
+const THEMES = ["auto", "light", "dark"];
+function applyTheme(t) {
+  if (t === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  $("#theme").textContent = `Theme: ${t}`;
+}
+let theme = "auto";
+try { theme = localStorage.getItem("kestrel-theme") || "auto"; } catch (e) {}
+applyTheme(theme);
+$("#theme").onclick = () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % 3];
+  applyTheme(theme);
+  try { localStorage.setItem("kestrel-theme", theme); } catch (e) {}
+};
+
+// ---------- setup ----------
+function nextNo() { serial += 1; $("#slip-no").textContent = `SR${serial}`; }
+nextNo();
+
+$("#examples").innerHTML = EXAMPLES.map((e, i) =>
+  `<li><button type="button" data-i="${i}"><span class="ex-kind">${esc(e.kind)}</span><span class="ex-text">${esc(e.text)}</span></button></li>`
+).join("");
+$("#examples").addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const e = EXAMPLES[b.dataset.i];
+  $("#text").value = e.text; $("#product").value = e.product;
+  form.channel.value = e.ch; form.warranty_status.value = e.w;
+  if (!go.disabled) form.requestSubmit();
+});
+$("#text").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !go.disabled) form.requestSubmit(); });
+
+fetch("/api/meta").then(r => r.json()).then(m => {
+  $("#product").insertAdjacentHTML("beforeend", m.products.map(p => `<option>${esc(p)}</option>`).join(""));
+  $("#status").innerHTML = m.model_loaded
+    ? `<span class="dot"></span><b>Router ready</b> · local model · no API key needed<br>asks a question below ${pct(m.threshold)} confidence`
+    : `<span class="dot off"></span><b>Model not trained</b> · run <b>python train.py</b>`;
+  jevOn = !!(m.jev && m.jev.available);
+  jevReason = m.jev ? m.jev.reason : "Jev status unknown.";
+  holdout = m.holdout;
+  $("#st-ml").innerHTML = m.model_loaded ? `<span class="on">●</span> ready · trained on Kestrel's history · free` : `<span class="off">●</span> not trained`;
+  $("#st-jev").innerHTML = jevOn ? `<span class="on">●</span> ready · TypeSafe API` : `<span class="off">●</span> built · not in use yet (no API key)`;
+  showTab(engine);
+  if (m.holdout) {
+    const h = m.holdout;
+    $("#evidence").textContent =
+      `Backtest ${h.window}, ${h.n.toLocaleString()} requests: routed ${pct(h.auto_share)} by itself at ${(h.auto_accuracy * 100).toFixed(1)}% accuracy` +
+      ` · every request ${(h.model_accuracy * 100).toFixed(1)}% · old bot ${(h.bot_accuracy * 100).toFixed(1)}%`;
+  }
+}).catch(() => {
+  $("#status").innerHTML = `<span class="dot off"></span><b>Can't reach the server</b> · is uvicorn running?`;
+});
+
+// ---------- tabs ----------
+const EMPTY = {
+  ml: `<div class="empty"><p>Paste a request on the left. The slip says which team takes it, how sure the router is, and why.</p>
+       <span class="hint">If the message doesn't say what's wrong, it asks one question instead of guessing.</span></div>`,
+  jev: `<div class="empty"><p>Same request, different brain: Jev decides from the team descriptions alone, with no Kestrel history.</p>
+       <span class="hint">Compare its answer with the local model's in the ledger below.</span></div>`,
+};
+function jevOffCard() {
+  return `<div class="off-card"><h3>Jev is built in, but not in use yet</h3>
+    <p>${esc(jevReason)}</p>
+    <p>Jev is TypeSafe AI's pretrained decision model. It runs on their servers and needs an API key, which we couldn't get during the assignment (limited early access). The code, this tab and the evaluation script are ready. Add a key to switch it on. Until then, use the local model tab.</p>
+    <pre>$env:TYPESAFE_API_KEY="your-key"
+uvicorn app:app --port 8000</pre>
+    <p class="hint">Request text is sent to TypeSafe when Jev is on. Get Kestrel's OK first (ops policy §10).</p></div>`;
+}
+function introFor(e) {
+  if (e === "batch") {
+    return `<b>Batch file.</b> Upload a whole export (IVR, chat, WhatsApp and email together) and the local model routes every row, with a short reason each, summary stats and a CSV to download. Nothing leaves this machine.`;
+  }
+  if (e === "ml") {
+    const h = holdout;
+    return `<b>Local model.</b> A linear SVM trained on 10,822 past requests and where each one was actually resolved. It runs on this machine at no cost.` +
+      (h ? ` Backtest ${h.window}: routes ${pct(h.auto_share)} by itself at ${(h.auto_accuracy * 100).toFixed(1)}%, ${(h.model_accuracy * 100).toFixed(1)}% on every request (old bot ${(h.bot_accuracy * 100).toFixed(1)}%).` : "");
+  }
+  return `<b>Jev.</b> TypeSafe AI's pretrained "System One" decision model. It gets only the seven team descriptions and the Billing rule from ops policy §3, never Kestrel's history, and returns a team with probabilities. ` +
+    (jevOn ? "Run evaluate_jev.py to score it on the same backtest." : "It's built into this app but not in use yet: we had no API key, so it hasn't been scored. Every result and predictions.csv come from the local model.");
+}
+function showTab(e) {
+  if (engine !== "batch") { tabs[engine].html = out.innerHTML; tabs[engine].state = $("#slip-state").textContent; }
+  engine = e;
+  document.querySelectorAll(".tab").forEach(t => {
+    const on = t.dataset.engine === e;
+    t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1;
+  });
+  const isBatch = e === "batch";
+  $("#main").hidden = isBatch; $("#batch").hidden = !isBatch;
+  if (isBatch) { $("#intro").innerHTML = introFor(e); return; }
+  $("#main").setAttribute("aria-labelledby", `tab-${e}`);
+  $("#slip-engine").textContent = e === "jev" ? "Jev" : "local model";
+  $("#intro").innerHTML = introFor(e);
+  const off = e === "jev" && !jevOn;
+  go.disabled = off; go.textContent = off ? "Jev is off" : "Route it";
+  out.innerHTML = off ? jevOffCard() : (tabs[e].html || EMPTY[e]);
+  $("#slip-state").textContent = off ? "off" : tabs[e].state;
+  out.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(b.dataset.team));
+}
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => showTab(t.dataset.engine));
+  t.addEventListener("keydown", ev => {
+    if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+    const order = ["ml", "jev", "batch"], i = order.indexOf(t.dataset.engine);
+    const next = order[(i + (ev.key === "ArrowRight" ? 1 : 2)) % 3];
+    showTab(next); $(`#tab-${next}`).focus();
+  });
+});
+
+// ---------- calling the endpoint ----------
+async function callRoute(body) {
+  go.disabled = true; $("#slip-state").textContent = "routing…";
+  try {
+    const r = await fetch("/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof data.detail === "string" ? data.detail : (data.detail?.[0]?.msg || `Server said ${r.status}`));
+    return data;
+  } finally { go.disabled = engine === "jev" && !jevOn; }
+}
+
+form.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const text = $("#text").value.trim();
+  if (text.length < 2) { $("#text").focus(); return; }
+  current = {
+    request_id: $("#slip-no").textContent,
+    request_text: text,
+    product_family: $("#product").value || null,
+    channel: form.channel.value,
+    warranty_status: form.warranty_status.value,
+    engine,
+  };
+  try { render(await callRoute(current)); secondOpinion(); }
+  catch (e) { showError(e.message); }
+});
+
+async function answer(team) {
+  try { render(await callRoute({ ...current, clarification: team }), true); }
+  catch (e) { showError(e.message); }
+}
+
+// ---------- rendering the slip ----------
+function ticks(p, c) {
+  const on = Math.round(p * 10);
+  return `<div class="ticks" style="--c:${c}" aria-hidden="true">${Array.from({ length: 10 }, (_, i) => `<i class="${i < on ? "on" : ""}"></i>`).join("")}</div>`;
+}
+function rankedList(ranked) {
+  return `<ul class="ranked">${ranked.map(r =>
+    `<li style="--c:${color(r.team)}"><span class="tag" style="--c:${color(r.team)}">${esc(r.team)}</span><span class="bar"><b style="width:${Math.max(r.p * 100, 1)}%"></b></span><span class="p">${pct(r.p)}</span></li>`
+  ).join("")}</ul>`;
+}
+const notes = rs => `<ol class="notes">${rs.map(r => `<li>${esc(r)}</li>`).join("")}</ol>`;
+const raw = d => `<details class="raw"><summary>Raw JSON from POST /route</summary><pre>${esc(JSON.stringify(d, null, 2))}</pre></details>`;
+
+function render(d, answered = false) {
+  out.dataset.team = d.team || d.best_guess || "";
+  if (d.status === "routed") {
+    const c = color(d.team);
+    $("#slip-state").textContent = `${answered ? "routed after question" : "routed"} · ${d.engine === "jev" ? "Jev" : "local model"}`;
+    out.innerHTML = `
+      <div class="verdict">
+        <div><div class="k">Send to</div><span class="stamp" style="--c:${c}">${esc(d.team)}</span></div>
+        ${d.confidence == null
+          ? `<div class="conf"><div class="num">✓</div><div class="of">chosen from the question</div></div>`
+          : `<div class="conf" style="--c:${c}"><div class="num">${pct(d.confidence)}</div><div class="of">router confidence</div>${ticks(d.confidence, c)}</div>`}
+      </div>
+      <div class="sub">Why, for the agent</div>
+      ${notes(d.reasons)}
+      <div class="sub">${answered ? "What the router scored before asking" : "How the other teams scored"}</div>
+      ${rankedList(d.ranked)}
+      ${raw(d)}`;
+    addToLedger(d.team, answered ? "after 1 question" : `auto · ${pct(d.confidence)}`);
+    nextNo();
+  } else {
+    $("#slip-state").textContent = "needs one answer";
+    const opt = o => `<button type="button" class="opt${o.likely ? " likely" : ""}" data-team="${esc(o.team)}" style="--c:${color(o.team)}"><span>${esc(o.label)}</span><span class="t">${o.likely ? "likely · " : ""}${esc(o.team)}</span></button>`;
+    out.innerHTML = `
+      <div class="ask">
+        <h3>${esc(d.question)}</h3>
+        <p>The message doesn't say what's wrong. Best guess is ${esc(d.best_guess)} at only ${pct(d.confidence)}, so the router asks instead of guessing. Most likely first.</p>
+        <div class="opts">${d.options.map(opt).join("")}</div>
+      </div>
+      <div class="sub">What the router saw</div>
+      ${notes(d.reasons)}
+      <div class="sub">How the teams scored</div>
+      ${rankedList(d.ranked)}
+      ${raw(d)}`;
+    out.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(b.dataset.team));
+    out.querySelector(".opt").focus({ preventScroll: true });
+  }
+}
+
+// When Jev is available, ask the engine that wasn't chosen and show its answer under the slip.
+async function secondOpinion() {
+  if (!jevOn) return;
+  const main = current.engine, other = main === "jev" ? "ml" : "jev";
+  const slot = document.createElement("div");
+  slot.className = "second"; slot.innerHTML = `<span class="k">Second opinion</span><span>asking ${other === "jev" ? "Jev" : "the local model"}…</span>`;
+  out.appendChild(slot);
+  try {
+    const r = await fetch("/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...current, engine: other }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || r.status);
+    const team = d.team || d.best_guess, first = out.dataset.team;
+    const same = team === first;
+    slot.innerHTML = `<span class="k">Second opinion · ${other === "jev" ? "Jev" : "local model"}</span>
+      <span class="tag" style="--c:${color(team)}">${esc(team)}</span><span class="hint">${pct(d.confidence ?? 0)}</span>
+      <span class="agree" style="color:${same ? "var(--t-installs)" : "var(--t-repairs)"}">${same ? "agrees" : "disagrees - worth a look"}</span>`;
+  } catch (e) {
+    slot.innerHTML = `<span class="k">Second opinion</span><span class="hint">unavailable: ${esc(e.message)}</span>`;
+  }
+}
+
+function showError(msg) {
+  $("#slip-state").textContent = "error";
+  out.innerHTML = `<div class="err"><b>Couldn't route this.</b><br>${esc(msg)}</div>`;
+}
+
+function addToLedger(team, how) {
+  ledger.unshift({ no: current.request_id, text: current.request_text, team, how, engine: current.engine === "jev" ? "Jev" : "Local model" });
+  $("#led-count").textContent = `${ledger.length} routed`;
+  $("#ledger").innerHTML = ledger.slice(0, 12).map(r =>
+    `<tr><td class="m">${esc(r.no)}</td><td>${esc(r.text.length > 90 ? r.text.slice(0, 88) + "…" : r.text)}</td><td><span class="tag" style="--c:${color(r.team)}">${esc(r.team)}</span></td><td class="m">${esc(r.engine)}</td><td class="m hide-sm">${esc(r.how)}</td></tr>`
+  ).join("");
+}
+
+// ---------- batch file ----------
+const B = { rows: [], shown: 100, summary: null, name: "", hasTruth: false };
+const fmt = n => n.toLocaleString("en-IN");
+
+const drop = $("#drop"), input = $("#b-input");
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) uploadBatch(f); });
+input.addEventListener("change", () => { if (input.files[0]) uploadBatch(input.files[0]); input.value = ""; });
+
+async function uploadBatch(file) {
+  B.name = file.name;
+  $("#b-file").textContent = file.name;
+  $("#b-msg").innerHTML = `<span class="hint">Routing ${esc(file.name)} (${(file.size / 1024).toFixed(0)} KB)…</span>`;
+  try {
+    const r = await fetch("/route/batch", { method: "POST", headers: { "Content-Type": "text/csv" }, body: file });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : `Server said ${r.status}`);
+    B.rows = d.rows; B.summary = d.summary; B.shown = 100; B.hasTruth = !!d.summary.accuracy;
+    $("#b-msg").innerHTML = d.skipped_empty
+      ? `<span class="hint">Skipped ${fmt(d.skipped_empty)} row(s) with no message text.</span>` : "";
+    renderBatch();
+  } catch (e) {
+    $("#b-results").hidden = true;
+    $("#b-msg").innerHTML = `<div class="err"><b>Couldn't route this file.</b><br>${esc(e.message)}</div>`;
+  }
+}
+
+function renderBatch() {
+  const s = B.summary, n = s.rows;
+  $("#b-results").hidden = false;
+  $("#b-tiles").innerHTML = [
+    ["Requests", fmt(n), B.name],
+    ["Routed automatically", pct(s.routed / n), `${fmt(s.routed)} at ${pct(s.threshold)}+ confidence`],
+    ["Need one question", pct(s.needs_question / n), `${fmt(s.needs_question)} don't say what's wrong`],
+    ["Average confidence", pct(s.avg_confidence), "across every row"],
+  ].map(([k, v, d]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${esc(d)}</div></div>`).join("");
+
+  const a = s.accuracy;
+  $("#b-acc").innerHTML = !a ? "" : `<div class="acc">
+      <div class="k" style="font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)">Checked against the file's <b>${esc(a.column)}</b> column (${fmt(a.rows_with_truth)} rows)</div>
+      <div class="row3">
+        <div><b>${pct(a.overall)}</b>every request</div>
+        <div><b>${a.when_routed == null ? "–" : pct(a.when_routed)}</b>when routed automatically</div>
+        <div><b>${a.when_asked == null ? "–" : pct(a.when_asked)}</b>best guess on the ones it would ask about</div>
+        ${a.old_bot == null ? "" : `<div><b>${pct(a.old_bot)}</b>old bot (team_label)</div>`}
+      </div>
+      ${a.rows_used_in_training ? `<div class="warn">${fmt(a.rows_used_in_training)} of these rows were used to train the model, so these numbers are optimistic. The honest backtest is in evaluation/report.md.</div>` : ""}
+    </div>`;
+
+  const max = Math.max(...s.teams.map(t => t.count), 1);
+  $("#b-teams").innerHTML = `<div class="bars">${s.teams.slice().sort((x, y) => y.count - x.count).map(t => {
+      const w = t.count / max * 100, q = t.count ? t.needs_question / t.count * w : 0;
+      return `<div class="bar-row" style="--c:${color(t.team)}"><span class="tag" style="--c:${color(t.team)}">${esc(t.team)}</span>
+        <span class="track"><span class="fill" style="width:${w}%"></span><span class="hatch" style="left:${w - q}%;width:${q}%"></span></span>
+        <span class="n">${fmt(t.count)} · ${pct(t.share)}</span></div>`;
+    }).join("")}</div><div class="legend"><i></i>hatched = best guess that needs a question first</div>`;
+
+  const bmax = Math.max(...s.confidence_bands.map(b => b.count), 1);
+  const bandColor = { "90-100%": "var(--t-installs)", "70-90%": "var(--t-warranty)", "50-70%": "var(--t-billing)", "under 50%": "var(--t-repairs)" };
+  $("#b-bands").innerHTML = `<div class="bars">${s.confidence_bands.map(b =>
+      `<div class="bar-row" style="--c:${bandColor[b.band]}"><span>${b.band}</span><span class="track"><span class="fill" style="width:${b.count / bmax * 100}%"></span></span><span class="n">${fmt(b.count)} · ${pct(b.count / n)}</span></div>`
+    ).join("")}</div><div class="legend">Below ${pct(s.threshold)} the live service asks one question instead of guessing.</div>`;
+
+  const mini = list => `<table class="mini"><thead><tr><th></th><th>Requests</th><th>Need a question</th><th>Top team</th></tr></thead><tbody>${
+      list.map(r => `<tr><td>${esc(r.key)}</td><td class="m">${fmt(r.count)}</td><td class="m">${pct(r.needs_question_share)}</td><td><span class="tag" style="--c:${color(r.top_team)}">${esc(r.top_team)}</span></td></tr>`).join("")
+    }</tbody></table>`;
+  $("#b-channel").innerHTML = mini(s.by_channel);
+  $("#b-product").innerHTML = mini(s.by_product);
+
+  $("#b-team").innerHTML = `<option value="">All teams</option>` + s.teams.map(t => `<option>${esc(t.team)}</option>`).join("");
+  $("#b-wrong-l").hidden = !B.hasTruth; $("#b-exp-h").hidden = !B.hasTruth;
+  document.querySelector('input[name="b-status"][value="all"]').checked = true;
+  $("#b-search").value = "";
+  renderTable();
+}
+
+function filteredRows() {
+  const status = document.querySelector('input[name="b-status"]:checked').value;
+  const team = $("#b-team").value, q = $("#b-search").value.trim().toLowerCase();
+  return B.rows.filter(r =>
+    (status === "all" || (status === "wrong" ? r.expected && r.expected !== r.team : r.status === status)) &&
+    (!team || r.team === team) &&
+    (!q || r.request_text.toLowerCase().includes(q) || String(r.request_id).toLowerCase().includes(q)));
+}
+
+function renderTable() {
+  const rows = filteredRows(), show = rows.slice(0, B.shown);
+  $("#b-count").textContent = `${fmt(rows.length)} of ${fmt(B.rows.length)}`;
+  $("#b-body").innerHTML = show.length ? show.map(r => `<tr>
+      <td class="m">${esc(r.request_id)}</td>
+      <td>${esc(r.request_text.length > 140 ? r.request_text.slice(0, 138) + "…" : r.request_text)}</td>
+      <td><span class="tag" style="--c:${color(r.team)}">${esc(r.team)}</span>${r.status === "routed" ? "" : `<span class="q">ask first · or ${esc(r.runner_up)}</span>`}</td>
+      <td class="m">${pct(r.confidence)}</td>
+      <td class="why hide-sm">${esc(r.reason)}</td>
+      ${B.hasTruth ? `<td>${r.expected ? (r.expected === r.team ? `<span class="ok">✓</span>` : `<span class="no">✗</span> ${esc(r.expected)}`) : ""}</td>` : ""}
+    </tr>`).join("") : `<tr><td colspan="6" class="empty-row">No rows match these filters.</td></tr>`;
+  $("#b-more").hidden = rows.length <= B.shown;
+}
+document.querySelectorAll('input[name="b-status"]').forEach(i => i.addEventListener("change", () => { B.shown = 100; renderTable(); }));
+$("#b-team").addEventListener("change", () => { B.shown = 100; renderTable(); });
+$("#b-search").addEventListener("input", () => { B.shown = 100; renderTable(); });
+$("#b-more").addEventListener("click", () => { B.shown += 100; renderTable(); });
+
+$("#b-dl").addEventListener("click", () => {
+  const cols = ["request_id", "channel", "product_family", "warranty_status", "request_text", "team", "status", "confidence", "runner_up", "runner_up_p", "reason"];
+  if (B.hasTruth) cols.push("expected");
+  const cell = v => { const t = v == null ? "" : String(v); return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const csv = [cols.join(","), ...B.rows.map(r => cols.map(c => cell(r[c])).join(","))].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = B.name.replace(/\.csv$/i, "") + "_routed.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+</script>
+</body>
+</html>
