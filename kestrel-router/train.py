@@ -30,7 +30,7 @@ def main():
     test["billing_rule_applied"] = fired
 
     # predictions.csv cannot ask a question, so every row gets the model's best guess.
-    test[["request_id", "team"]].to_csv(ROOT / "predictions.csv", index=False)
+    test[["request_id", "team"]].to_csv(ROOT / "predictions.csv", index=False, lineterminator="\n")  # LF, like the sample
     (ROOT / "evaluation").mkdir(exist_ok=True)
     test.drop(columns=["request_text"]).to_csv(ROOT / "evaluation" / "test_predictions_detail.csv", index=False)
 

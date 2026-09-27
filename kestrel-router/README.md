@@ -105,7 +105,9 @@ The page's **03 Batch file** tab takes a CSV export: drag it in, or choose it. E
 - **Where the requests go:** a count per team. The hatched part of each bar is the best guesses that need a question first.
 - **Confidence bands, plus breakdowns by channel and by product.** These show where vague requests come from.
 - **A table of every request:** team, confidence, a short reason, and "ask first" flags. You can filter by status or team and search.
-- **Download CSV:** the original columns plus `team`, `status`, `confidence`, `runner_up` and `reason`.
+- **Two downloads**, both covering every row in the original order, whatever the table filters show:
+  - **Download predictions (`request_id, team`):** exactly the `sample_submission.csv` format. For `test_unlabelled.csv` it's byte-for-byte identical to the `predictions.csv` written by `train.py`.
+  - **Download full table:** the original columns plus `team`, `status`, `confidence`, `runner_up` and `reason`.
 - **Accuracy**, if the file has the true team (`final_team` or `team`), shown next to the old bot if `team_label` is there. If those rows were used in training, the page says so, because the numbers are then optimistic. The honest backtest is in `evaluation/report.md`.
 
 The same thing is available through the API:

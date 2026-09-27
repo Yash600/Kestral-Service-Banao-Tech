@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memo: replacing the routing bot</title>
+<style>
+  @page { size: A4; margin: 13mm 15mm 12mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #1d1b17; font: 9.4pt/1.38 "Segoe UI", system-ui, sans-serif; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5pt solid #1d1b17; padding-bottom: 5pt; margin-bottom: 7pt; }
+  h1 { margin: 0; font: 400 20pt/1 Georgia, "Times New Roman", serif; }
+  .to { font-size: 8.2pt; color: #5a554b; text-align: right; line-height: 1.35; }
+  h2 { margin: 8pt 0 3pt; font: 600 8pt/1 "Segoe UI", sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #5a554b; }
+  p { margin: 0 0 4pt; }
+  .decision { font: 400 12.2pt/1.3 Georgia, serif; margin-bottom: 2pt; }
+  .nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; margin: 3pt 0 4pt; }
+  .num { border: .6pt solid #b9ae9b; padding: 5pt 7pt; }
+  .num b { display: block; font: 600 17pt/1.05 Georgia, serif; }
+  .num span { font-size: 7.8pt; color: #5a554b; line-height: 1.25; display: block; }
+  .num.hi { border: 1.2pt solid #1d1b17; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.7pt; margin: 2pt 0 2pt; }
+  th, td { text-align: left; padding: 3pt 5pt; border-bottom: .5pt solid #d9d1c2; vertical-align: top; }
+  th { font-weight: 600; font-size: 7.8pt; color: #5a554b; border-bottom: .8pt solid #1d1b17; }
+  tr.total td { font-weight: 600; border-top: .8pt solid #1d1b17; border-bottom: 0; }
+  .note { font-size: 7.6pt; color: #5a554b; }
+  ol { margin: 0; padding-left: 14pt; }
+  ol li { margin-bottom: 2.4pt; }
+  .ex { color: #5a554b; font-style: italic; }
+  .cols { display: grid; grid-template-columns: 1.12fr 1fr; gap: 14pt; }
+  .aside { background: #f2ede3; padding: 5pt 8pt; font-size: 8.5pt; margin: 3pt 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Memo: replacing the routing bot</h1>
+  <div class="to"><b>To</b> Ritu Deshpande, Head of D2C Operations<br><b>From</b> the service-routing project team (via Kabir Nanda)<br><b>Cc</b> Farhan Sheikh · Meenal Joshi · Tanmay Kulkarni · 27 September 2026</div>
+</header>
+
+<h2>The decision</h2>
+<p class="decision"><b>Switch the bot off.</b> Replace it with our router, which sends each request to the team that actually solves it. When a message is too vague to route, the router asks the customer one quick question instead of guessing.</p>
+
+<h2>The number</h2>
+<div class="nums">
+  <div class="num"><b>77 / 100</b><span>requests the bot sends to the right team today</span></div>
+  <div class="num hi"><b>86 / 100</b><span>our router, when it has to answer every request on its own</span></div>
+  <div class="num hi"><b>97 / 100</b><span>right on the 84 in 100 requests that say clearly what's wrong</span></div>
+  <div class="num"><b>16 / 100</b><span>too vague to route, so they get one question instead of a guess</span></div>
+</div>
+<p class="aside">You asked for a 90% match with the bot's labels. We can do that (we measured 94%), but it only copies the bot's mistakes: just 81 of 100 would reach the right team. So we measured against <b>where each request was actually resolved</b>.</p>
+
+<h2>The rupees (per year, about 8,500 requests)</h2>
+<table>
+  <tr><th></th><th style="width:15%">Today</th><th style="width:38%">With the router</th></tr>
+  <tr><td>Misrouting: about 1.4 transfers × Rs 305, plus Rs 260 for the extra customer contact, so about Rs 692 each</td><td>Rs 14.6 lakh</td><td>Rs 1.3–4.8 lakh*</td></tr>
+  <tr><td>Bot licence</td><td>Rs 3.2 lakh</td><td>Rs 0</td></tr>
+  <tr><td>Running cost</td><td>in the licence</td><td>Rs 0: runs on an ordinary office computer, with no per-request fee</td></tr>
+  <tr class="total"><td>Total</td><td>Rs 17.8 lakh</td><td>Rs 1.3–4.8 lakh, saving about Rs 13–16 lakh</td></tr>
+</table>
+<p class="note">*The high end assumes every question to a customer costs as much as a full extra contact.</p>
+
+<div class="cols">
+<div>
+<h2>How we got there</h2>
+<ol>
+  <li><b>Checked the labels first.</b> We compared the bot's choice with the team that closed each request, and 1 in 4 was wrong. <span class="ex">"I paid for installation but the installer didn't come". The bot sent it to Billing; Installs &amp; Demo solved it.</span></li>
+  <li><b>Cleaned the export.</b> We merged the renamed teams, fixed the garbled Zoho text (<span class="ex">"urgÃ©nt"</span> became "urgent"), and corrected Zoho times that were stored in UTC.</li>
+  <li><b>Taught the router from real outcomes.</b> From 10,822 past requests it learned which words point to which team. <span class="ex">"gone blank" and "error code" point to Repairs; "filter" and "AMC kit" point to Filters.</span></li>
+  <li><b>Tested it fairly.</b> We trained it on older months and tested it on three later quarters it had never seen. It scored 85–86% every time.</li>
+  <li><b>Learned from its mistakes.</b> When a customer asks two things, the last one decides. <span class="ex">"Spare blade available? Mixer showing error E7" goes to Repairs.</span></li>
+  <li><b>Found the limit.</b> 16 in 100 say nothing useful, like <span class="ex">"please call me about my purifier"</span>. These ended up with all seven teams in roughly equal shares, so no system can route them from the text. The router asks instead.</li>
+  <li><b>Tried and dropped</b> more complex models, hand-written keyword lists, and a new AI decision model (Jev, for which we had no access key). They gave no gain, or couldn't be measured.</li>
+</ol>
+</div>
+<div>
+<h2>What to do next week</h2>
+<ol>
+  <li><b>Run the router alongside the bot</b> on live requests for two weeks, compare the results daily, and switch the bot off at renewal.</li>
+  <li><b>Set up the automatic question</b> for vague requests: a WhatsApp, email or SMS reply saying "reply 1–7". If there's no reply within 4 hours, the request goes to the best guess, flagged for the agent to check.</li>
+  <li><b>Plan headcount on the real numbers.</b> The bot's labels overstate Repairs (206 vs 165 a month), Billing (113 vs 90) and Filters (95 vs 73). They understate Returns (81 vs 106), Installs (78 vs 104) and Warranty (67 vs 89).</li>
+  <li><b>Ask Tanmay to add</b> customer ID, delivery date and open tickets to the export. With those, many vague requests can be routed without asking.</li>
+</ol>
+</div>
+</div>
+</body>
+</html>

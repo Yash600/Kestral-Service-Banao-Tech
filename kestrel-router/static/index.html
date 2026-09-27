@@ -269,7 +269,9 @@ details.raw pre { font: 12px/1.5 var(--mono); background: var(--paper); padding:
 .b-tools .seg { flex: 0 1 auto; }
 .b-tools select { width: auto; min-width: 170px; }
 .b-tools input[type=search] { flex: 1 1 200px; padding: 9px 10px; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--paper); }
-.b-tools .btn { margin-left: auto; }
+.b-tools .dl-group { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--paper); filter: none; }
 .b-table-wrap { overflow-x: auto; }
 .b-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .b-table th { text-align: left; font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 8px; border-bottom: 1px solid var(--rule-strong); position: sticky; top: 0; background: var(--sheet); }
@@ -307,7 +309,7 @@ footer a { color: var(--ink-2); }
   .seg span { padding: 8px 6px; }
   .tab { padding: 8px 10px; flex: 1 1 0; } .tab .t { font-size: 18px; } .tab .s { display: none; }
   .bar-row { grid-template-columns: 110px 1fr 70px; }
-  .b-tools .btn { margin-left: 0; }
+  .b-tools .dl-group { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .stamp { animation: none; } }
 </style>
@@ -449,7 +451,10 @@ footer a { color: var(--ink-2); }
           </div>
           <select id="b-team" aria-label="Team filter"><option value="">All teams</option></select>
           <input type="search" id="b-search" placeholder="Search messages or IDs" aria-label="Search">
-          <button class="btn" id="b-dl" type="button">Download CSV</button>
+          <div class="dl-group">
+            <button class="btn" id="b-dl-sub" type="button" title="Two columns, same format as sample_submission.csv">Download predictions · request_id, team</button>
+            <button class="btn btn-ghost" id="b-dl" type="button" title="Every column: team, status, confidence, runner-up and reason">Download full table</button>
+          </div>
         </div>
         <div class="b-table-wrap">
           <table class="b-table">
@@ -824,16 +829,25 @@ $("#b-team").addEventListener("change", () => { B.shown = 100; renderTable(); })
 $("#b-search").addEventListener("input", () => { B.shown = 100; renderTable(); });
 $("#b-more").addEventListener("click", () => { B.shown += 100; renderTable(); });
 
+// Both downloads cover every uploaded row in the original order, whatever the table filters show.
+function downloadCsv(cols, filename, { excel }) {
+  const cell = v => { const t = v == null ? "" : String(v); return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const csv = [cols.join(","), ...B.rows.map(r => cols.map(c => cell(r[c])).join(","))].join(excel ? "\r\n" : "\n") + "\n";
+  const a = document.createElement("a");
+  // The BOM lets Excel show Hindi or accented text correctly; the submission file stays plain, like sample_submission.csv.
+  a.href = URL.createObjectURL(new Blob([(excel ? "\ufeff" : "") + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const baseName = () => B.name.replace(/\.csv$/i, "");
 $("#b-dl").addEventListener("click", () => {
   const cols = ["request_id", "channel", "product_family", "warranty_status", "request_text", "team", "status", "confidence", "runner_up", "runner_up_p", "reason"];
   if (B.hasTruth) cols.push("expected");
-  const cell = v => { const t = v == null ? "" : String(v); return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
-  const csv = [cols.join(","), ...B.rows.map(r => cols.map(c => cell(r[c])).join(","))].join("\r\n");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
-  a.download = B.name.replace(/\.csv$/i, "") + "_routed.csv";
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  downloadCsv(cols, baseName() + "_routed.csv", { excel: true });
+});
+$("#b-dl-sub").addEventListener("click", () => {
+  downloadCsv(["request_id", "team"], baseName() + "_predictions.csv", { excel: false });
 });
 </script>
 </body>
